@@ -1,0 +1,1919 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paperclip Notes</title>
+
+<style>
+*{box-sizing:border-box}
+
+:root{
+    --bg:#f3f0e9;
+    --paper:#fffdf9;
+    --side:#ebe7df;
+    --line:#dcd6cb;
+    --text:#292722;
+    --muted:#858078;
+    --accent:#5c6dde;
+    --accent-light:#e9ecff;
+    --danger:#c95252;
+}
+
+html,body{
+    margin:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+}
+
+body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+
+button,input{
+    font:inherit;
+}
+
+button{
+    cursor:pointer;
+}
+
+.app{
+    height:100vh;
+    display:flex;
+}
+
+/* SIDEBAR */
+
+.sidebar{
+    width:280px;
+    flex-shrink:0;
+    background:var(--side);
+    border-right:1px solid var(--line);
+    display:flex;
+    flex-direction:column;
+}
+
+.brand{
+    display:flex;
+    gap:11px;
+    align-items:center;
+    padding:20px;
+}
+
+.logo{
+    width:36px;
+    height:36px;
+    border-radius:9px;
+    display:grid;
+    place-items:center;
+    color:white;
+    background:var(--accent);
+    font-size:19px;
+}
+
+.brand-name{
+    font-weight:700;
+    font-size:17px;
+}
+
+.brand-sub{
+    font-size:11px;
+    color:var(--muted);
+    margin-top:2px;
+}
+
+.new-note{
+    margin:0 14px 12px;
+    border:0;
+    border-radius:8px;
+    padding:11px;
+    color:white;
+    background:var(--accent);
+    font-weight:600;
+}
+
+.new-note:hover{
+    filter:brightness(.96);
+}
+
+.search-wrap{
+    padding:0 14px 12px;
+}
+
+.search{
+    width:100%;
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:#f8f5ef;
+    padding:9px 10px;
+    outline:none;
+}
+
+.search:focus{
+    border-color:#aab3ed;
+}
+
+.notes{
+    flex:1;
+    overflow:auto;
+    padding:3px 8px;
+}
+
+.note{
+    padding:10px;
+    border-radius:8px;
+    margin-bottom:3px;
+    cursor:pointer;
+}
+
+.note:hover{
+    background:#e3ded5;
+}
+
+.note.active{
+    background:var(--accent-light);
+}
+
+.note-title{
+    font-weight:600;
+    font-size:14px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.note-preview{
+    font-size:12px;
+    color:var(--muted);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    margin-top:3px;
+}
+
+.note-date{
+    font-size:10px;
+    color:#a39d93;
+    margin-top:4px;
+}
+
+.empty{
+    text-align:center;
+    color:var(--muted);
+    font-size:13px;
+    padding:30px 10px;
+}
+
+.sidebar-bottom{
+    border-top:1px solid var(--line);
+    padding:10px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:6px;
+}
+
+.side-btn{
+    border:1px solid var(--line);
+    border-radius:7px;
+    padding:8px 4px;
+    background:#f8f5ef;
+    color:#57534c;
+    font-size:12px;
+}
+
+.side-btn:hover{
+    background:white;
+}
+
+/* MAIN */
+
+.main{
+    min-width:0;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    background:var(--paper);
+}
+
+.topbar{
+    height:60px;
+    border-bottom:1px solid var(--line);
+    display:flex;
+    align-items:center;
+    padding:0 20px;
+    gap:12px;
+}
+
+.title{
+    flex:1;
+    min-width:0;
+    border:0;
+    outline:0;
+    background:transparent;
+    font-size:20px;
+    font-weight:650;
+    color:var(--text);
+}
+
+.save-status{
+    color:var(--muted);
+    font-size:11px;
+}
+
+.delete{
+    border:0;
+    background:transparent;
+    color:#99938a;
+    font-size:18px;
+    border-radius:6px;
+    padding:6px;
+}
+
+.delete:hover{
+    color:var(--danger);
+    background:#fff0f0;
+}
+
+/* TOOLBAR */
+
+.toolbar{
+    height:47px;
+    border-bottom:1px solid #e7e2da;
+    display:flex;
+    align-items:center;
+    padding:0 18px;
+    gap:2px;
+    overflow-x:auto;
+    background:#fcfaf6;
+}
+
+.tool{
+    border:0;
+    background:transparent;
+    height:31px;
+    min-width:32px;
+    border-radius:6px;
+    color:#555149;
+}
+
+.tool:hover{
+    background:#e8e4dc;
+}
+
+.sep{
+    height:21px;
+    width:1px;
+    background:var(--line);
+    margin:0 6px;
+}
+
+.color{
+    width:25px;
+    height:25px;
+    padding:0;
+    border:0;
+    background:transparent;
+}
+
+/* EDITOR */
+
+.editor-wrap{
+    flex:1;
+    overflow:auto;
+    padding:45px 25px 100px;
+}
+
+.editor{
+    max-width:820px;
+    min-height:600px;
+    margin:auto;
+    outline:0;
+    font-family:Georgia,"Times New Roman",serif;
+    font-size:17px;
+    line-height:1.7;
+    color:#302d28;
+}
+
+.editor:empty:before{
+    content:"Start writing...";
+    color:#b5afa6;
+}
+
+.editor img{
+    max-width:100%;
+    height:auto;
+    display:block;
+    border-radius:7px;
+    margin:12px 0;
+}
+
+.editor h1,
+.editor h2{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+
+.editor blockquote{
+    border-left:3px solid #aaa;
+    padding-left:16px;
+    color:#6c675f;
+}
+
+.status{
+    position:fixed;
+    bottom:12px;
+    right:20px;
+    color:#aaa49b;
+    font-size:11px;
+    pointer-events:none;
+}
+
+/* EMPTY STATE */
+
+.no-note{
+    display:none;
+    flex:1;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+}
+
+.no-note-inner{
+    max-width:340px;
+}
+
+.no-note-icon{
+    font-size:45px;
+}
+
+.no-note p{
+    color:var(--muted);
+    font-size:14px;
+}
+
+/* MODAL */
+
+.modal-bg{
+    position:fixed;
+    inset:0;
+    background:rgba(25,22,18,.35);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:50;
+}
+
+.modal{
+    width:min(420px,calc(100vw - 30px));
+    background:var(--paper);
+    border-radius:12px;
+    padding:22px;
+    box-shadow:0 20px 60px rgba(0,0,0,.2);
+}
+
+.modal h3{
+    margin:0 0 7px;
+}
+
+.modal p{
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.5;
+}
+
+.modal-buttons{
+    display:flex;
+    justify-content:flex-end;
+    gap:7px;
+    margin-top:17px;
+}
+
+.modal-buttons button{
+    border:1px solid var(--line);
+    border-radius:7px;
+    padding:8px 13px;
+    background:#f5f2ec;
+}
+
+.modal-buttons .danger{
+    background:var(--danger);
+    color:white;
+    border-color:var(--danger);
+}
+
+@media(max-width:700px){
+    .sidebar{width:220px}
+    .editor-wrap{padding:30px 16px 80px}
+    .toolbar{padding:0 8px}
+    .save-status{display:none}
+    .topbar{padding:0 10px}
+}
+
+@media(max-width:520px){
+    .sidebar{width:175px}
+    .brand-sub{display:none}
+    .brand{padding:15px}
+    .brand-name{font-size:14px}
+    .new-note{margin-left:9px;margin-right:9px}
+    .search-wrap{padding-left:9px;padding-right:9px}
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<aside class="sidebar">
+
+    <div class="brand">
+        <div class="logo">✎</div>
+        <div>
+            <div class="brand-name">Paperclip Notes</div>
+            <div class="brand-sub">Offline notebook</div>
+        </div>
+    </div>
+
+    <button class="new-note" onclick="newNote()">＋ New note</button>
+
+    <div class="search-wrap">
+        <input
+            id="search"
+            class="search"
+            placeholder="Search notes..."
+            oninput="renderNotes()"
+        >
+    </div>
+
+    <div id="notes" class="notes"></div>
+
+    <div class="sidebar-bottom">
+        <button class="side-btn" onclick="backup()">↑ Backup</button>
+        <button class="side-btn" onclick="document.getElementById('import').click()">↓ Restore</button>
+        <button class="side-btn" onclick="exportTXT()">TXT files</button>
+        <button class="side-btn" onclick="exportCurrentTXT()">Current TXT</button>
+    </div>
+
+</aside>
+
+<main class="main">
+
+    <div id="topbar" class="topbar">
+
+        <input
+            id="title"
+            class="title"
+            placeholder="Untitled note"
+            oninput="titleChanged()"
+        >
+
+        <span id="saveStatus" class="save-status">Saved</span>
+
+        <button
+            class="delete"
+            title="Delete note"
+            onclick="askDelete()"
+        >♲</button>
+
+    </div>
+
+    <div id="toolbar" class="toolbar">
+
+        <button class="tool" onclick="fmt('bold')"><b>B</b></button>
+        <button class="tool" onclick="fmt('italic')"><i>I</i></button>
+        <button class="tool" onclick="fmt('underline')"><u>U</u></button>
+
+        <div class="sep"></div>
+
+        <button class="tool" onclick="fmt('formatBlock','H1')">H1</button>
+        <button class="tool" onclick="fmt('formatBlock','H2')">H2</button>
+        <button class="tool" onclick="fmt('formatBlock','P')">¶</button>
+
+        <div class="sep"></div>
+
+        <button class="tool" onclick="fmt('insertUnorderedList')">•≡</button>
+        <button class="tool" onclick="fmt('insertOrderedList')">1≡</button>
+        <button class="tool" onclick="fmt('formatBlock','BLOCKQUOTE')">❝</button>
+
+        <div class="sep"></div>
+
+        <button class="tool" onclick="fmt('justifyLeft')">≡</button>
+        <button class="tool" onclick="fmt('justifyCenter')">☰</button>
+        <button class="tool" onclick="fmt('justifyRight')">≡</button>
+
+        <div class="sep"></div>
+
+        <button class="tool" onclick="link()">🔗</button>
+        <button class="tool" onclick="document.getElementById('image').click()">▧</button>
+
+        <input
+            id="color"
+            class="color"
+            type="color"
+            value="#302d28"
+            onchange="color(this.value)"
+        >
+
+    </div>
+
+    <div id="editorWrap" class="editor-wrap">
+
+        <div
+            id="editor"
+            class="editor"
+            contenteditable="true"
+            spellcheck="true"
+            oninput="changed()"
+            onpaste="paste(event)"
+            ondrop="drop(event)"
+            ondragover="event.preventDefault()"
+        ></div>
+
+    </div>
+
+    <div id="emptyState" class="no-note">
+
+        <div class="no-note-inner">
+
+            <div class="no-note-icon">📓</div>
+
+            <h2>No notes yet</h2>
+
+            <p>
+                Make your first note. It will automatically
+                stay on this device even when the app is closed.
+            </p>
+
+            <button class="new-note" onclick="newNote()">
+                ＋ Create a note
+            </button>
+
+        </div>
+
+    </div>
+
+</main>
+
+</div>
+
+<div id="status" class="status">0 words</div>
+
+<input
+    id="image"
+    type="file"
+    accept="image/*"
+    multiple
+    hidden
+    onchange="imageSelected(event)"
+>
+
+<input
+    id="import"
+    type="file"
+    accept=".notebackup,.gz,.json"
+    hidden
+    onchange="restore(event)"
+>
+
+<div id="deleteModal" class="modal-bg">
+
+    <div class="modal">
+
+        <h3>Delete this note?</h3>
+
+        <p>
+            This permanently deletes the note from this device.
+            Make a backup first if you might need it later.
+        </p>
+
+        <div class="modal-buttons">
+
+            <button onclick="closeDelete()">Cancel</button>
+
+            <button class="danger" onclick="deleteNote()">
+                Delete
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+/* ============================================================
+   PAPERCLIP NOTES
+   ============================================================ */
+
+const DB_NAME = "PaperclipNotes";
+const DB_VERSION = 2;
+
+let db;
+let notes = [];
+let images = new Map();
+let current = null;
+
+let saveTimer = null;
+let titleTimer = null;
+
+
+/* ------------------------------------------------------------
+   DATABASE
+   ------------------------------------------------------------ */
+
+function openDB(){
+
+    return new Promise((resolve,reject)=>{
+
+        const request =
+            indexedDB.open(DB_NAME,DB_VERSION);
+
+        request.onupgradeneeded = e => {
+
+            const database = e.target.result;
+
+            if(!database.objectStoreNames.contains("notes")){
+
+                database.createObjectStore(
+                    "notes",
+                    {keyPath:"id"}
+                );
+            }
+
+            if(!database.objectStoreNames.contains("images")){
+
+                database.createObjectStore(
+                    "images",
+                    {keyPath:"id"}
+                );
+            }
+        };
+
+        request.onsuccess = e => {
+
+            db = e.target.result;
+
+            resolve();
+        };
+
+        request.onerror = () =>
+            reject(request.error);
+    });
+}
+
+
+function getAll(store){
+
+    return new Promise((resolve,reject)=>{
+
+        const tx =
+            db.transaction(store,"readonly");
+
+        const req =
+            tx.objectStore(store).getAll();
+
+        req.onsuccess = () =>
+            resolve(req.result);
+
+        req.onerror = () =>
+            reject(req.error);
+    });
+}
+
+
+function put(store,value){
+
+    return new Promise((resolve,reject)=>{
+
+        const tx =
+            db.transaction(store,"readwrite");
+
+        const req =
+            tx.objectStore(store).put(value);
+
+        req.onsuccess = () =>
+            resolve();
+
+        req.onerror = () =>
+            reject(req.error);
+    });
+}
+
+
+function remove(store,id){
+
+    return new Promise((resolve,reject)=>{
+
+        const tx =
+            db.transaction(store,"readwrite");
+
+        const req =
+            tx.objectStore(store).delete(id);
+
+        req.onsuccess = () =>
+            resolve();
+
+        req.onerror = () =>
+            reject(req.error);
+    });
+}
+
+
+/* ------------------------------------------------------------
+   START
+   ------------------------------------------------------------ */
+
+async function start(){
+
+    await openDB();
+
+    notes = await getAll("notes");
+
+    const storedImages =
+        await getAll("images");
+
+    images.clear();
+
+    for(const image of storedImages){
+
+        images.set(image.id,image);
+    }
+
+    notes.sort((a,b)=>b.updated-a.updated);
+
+    renderNotes();
+
+    if(notes.length){
+
+        openNote(notes[0].id);
+
+    }else{
+
+        empty();
+    }
+}
+
+
+/* ------------------------------------------------------------
+   NOTES
+   ------------------------------------------------------------ */
+
+async function newNote(){
+
+    const now = Date.now();
+
+    const note = {
+
+        id:
+            Date.now().toString(36)+
+            Math.random().toString(36).slice(2),
+
+        title:"Untitled note",
+
+        content:"",
+
+        created:now,
+
+        updated:now
+    };
+
+    notes.unshift(note);
+
+    await put("notes",note);
+
+    renderNotes();
+
+    openNote(note.id);
+
+    setTimeout(()=>{
+
+        document.getElementById("title").focus();
+        document.getElementById("title").select();
+
+    },50);
+}
+
+
+function openNote(id){
+
+    const note =
+        notes.find(n=>n.id===id);
+
+    if(!note)return;
+
+    current=id;
+
+    document.getElementById("title").value =
+        note.title || "Untitled note";
+
+    document.getElementById("editor").innerHTML =
+        note.content || "";
+
+    document.getElementById("topbar").style.display="flex";
+    document.getElementById("toolbar").style.display="flex";
+    document.getElementById("editorWrap").style.display="block";
+    document.getElementById("emptyState").style.display="none";
+
+    countWords();
+
+    renderNotes();
+}
+
+
+function titleChanged(){
+
+    const note =
+        notes.find(n=>n.id===current);
+
+    if(!note)return;
+
+    note.title =
+        document.getElementById("title").value ||
+        "Untitled note";
+
+    note.updated=Date.now();
+
+    document.getElementById("saveStatus").textContent =
+        "Saving...";
+
+    clearTimeout(titleTimer);
+
+    titleTimer=setTimeout(async()=>{
+
+        await put("notes",note);
+
+        document.getElementById("saveStatus").textContent =
+            "Saved";
+
+        renderNotes();
+
+    },250);
+}
+
+
+function changed(){
+
+    document.getElementById("saveStatus").textContent =
+        "Saving...";
+
+    countWords();
+
+    clearTimeout(saveTimer);
+
+    saveTimer=setTimeout(saveCurrent,350);
+}
+
+
+async function saveCurrent(){
+
+    if(!current)return;
+
+    const note =
+        notes.find(n=>n.id===current);
+
+    if(!note)return;
+
+    note.content =
+        document.getElementById("editor").innerHTML;
+
+    note.updated=Date.now();
+
+    await put("notes",note);
+
+    document.getElementById("saveStatus").textContent =
+        "Saved";
+
+    renderNotes();
+}
+
+
+/* ------------------------------------------------------------
+   SIDEBAR
+   ------------------------------------------------------------ */
+
+function renderNotes(){
+
+    const box =
+        document.getElementById("notes");
+
+    const search =
+        document.getElementById("search")
+            .value
+            .toLowerCase()
+            .trim();
+
+    const filtered =
+        notes
+        .filter(note=>{
+
+            const title =
+                (note.title||"")
+                .toLowerCase();
+
+            const text =
+                plain(note.content||"")
+                .toLowerCase();
+
+            return !search ||
+                title.includes(search) ||
+                text.includes(search);
+
+        })
+        .sort((a,b)=>b.updated-a.updated);
+
+    box.innerHTML="";
+
+    if(!filtered.length){
+
+        box.innerHTML =
+            `<div class="empty">
+                ${search ? "No notes found." : "No notes yet."}
+             </div>`;
+
+        return;
+    }
+
+    for(const note of filtered){
+
+        const item =
+            document.createElement("div");
+
+        item.className =
+            "note"+
+            (note.id===current ? " active":"");
+
+        const title =
+            escape(note.title||"Untitled note");
+
+        let preview =
+            plain(note.content||"")
+            .replace(/\s+/g," ")
+            .trim();
+
+        if(!preview)
+            preview="No text yet";
+
+        preview =
+            escape(preview.slice(0,90));
+
+        item.innerHTML=`
+            <div class="note-title">${title}</div>
+            <div class="note-preview">${preview}</div>
+            <div class="note-date">${date(note.updated)}</div>
+        `;
+
+        item.onclick=()=>openNote(note.id);
+
+        box.appendChild(item);
+    }
+}
+
+
+function date(time){
+
+    const d=new Date(time);
+    const now=new Date();
+
+    if(d.toDateString()===now.toDateString()){
+
+        return d.toLocaleTimeString([],{
+            hour:"numeric",
+            minute:"2-digit"
+        });
+    }
+
+    return d.toLocaleDateString([],{
+        month:"short",
+        day:"numeric"
+    });
+}
+
+
+/* ------------------------------------------------------------
+   EDITING
+   ------------------------------------------------------------ */
+
+function fmt(command,value=null){
+
+    document.getElementById("editor").focus();
+
+    document.execCommand(
+        command,
+        false,
+        value
+    );
+
+    changed();
+}
+
+
+function color(value){
+
+    document.getElementById("editor").focus();
+
+    document.execCommand(
+        "foreColor",
+        false,
+        value
+    );
+
+    changed();
+}
+
+
+function link(){
+
+    const url =
+        prompt("Enter a website address:");
+
+    if(!url)return;
+
+    document.getElementById("editor").focus();
+
+    document.execCommand(
+        "createLink",
+        false,
+        url
+    );
+
+    changed();
+}
+
+
+/* ------------------------------------------------------------
+   IMAGES
+   ------------------------------------------------------------ */
+
+/*
+   Images are stored separately from notes.
+
+   This is important for space:
+   the note itself only contains a tiny image ID.
+   The actual image is stored once in IndexedDB.
+*/
+
+async function imageSelected(event){
+
+    for(const file of event.target.files){
+
+        if(file.type.startsWith("image/")){
+
+            await addImage(file);
+        }
+    }
+
+    event.target.value="";
+}
+
+
+async function addImage(file){
+
+    const id =
+        "img_"+Date.now().toString(36)+
+        Math.random().toString(36).slice(2);
+
+    /*
+       Resize huge pictures before saving.
+       This can dramatically reduce storage.
+    */
+
+    const blob =
+        await optimizeImage(file);
+
+    await put("images",{
+        id:id,
+        type:blob.type,
+        blob:blob
+    });
+
+    images.set(id,{
+        id:id,
+        type:blob.type,
+        blob:blob
+    });
+
+    const img =
+        document.createElement("img");
+
+    img.dataset.imageId=id;
+
+    img.src =
+        URL.createObjectURL(blob);
+
+    insertAtCursor(img);
+
+    changed();
+}
+
+
+async function optimizeImage(file){
+
+    /*
+       Pictures larger than 1800px are resized.
+       Normal photos therefore don't consume enormous
+       amounts of space.
+    */
+
+    return new Promise(resolve=>{
+
+        const image =
+            new Image();
+
+        image.onload=()=>{
+
+            const max=1800;
+
+            let w=image.naturalWidth;
+            let h=image.naturalHeight;
+
+            if(w<=max && h<=max){
+
+                resolve(file);
+
+                return;
+            }
+
+            const ratio =
+                Math.min(max/w,max/h);
+
+            w=Math.round(w*ratio);
+            h=Math.round(h*ratio);
+
+            const canvas =
+                document.createElement("canvas");
+
+            canvas.width=w;
+            canvas.height=h;
+
+            const ctx =
+                canvas.getContext("2d");
+
+            ctx.drawImage(
+                image,
+                0,
+                0,
+                w,
+                h
+            );
+
+            canvas.toBlob(
+                blob=>resolve(blob),
+                "image/jpeg",
+                .82
+            );
+        };
+
+        image.src =
+            URL.createObjectURL(file);
+    });
+}
+
+
+function insertAtCursor(node){
+
+    const selection =
+        window.getSelection();
+
+    if(!selection ||
+       !selection.rangeCount){
+
+        document.getElementById("editor")
+            .appendChild(node);
+
+        return;
+    }
+
+    const range =
+        selection.getRangeAt(0);
+
+    range.deleteContents();
+
+    range.insertNode(node);
+
+    range.setStartAfter(node);
+    range.collapse(true);
+
+    selection.removeAllRanges();
+    selection.addRange(range);
+}
+
+
+/* ------------------------------------------------------------
+   PASTE IMAGES
+   ------------------------------------------------------------ */
+
+async function paste(event){
+
+    const items =
+        event.clipboardData?.items;
+
+    if(!items)return;
+
+    for(const item of items){
+
+        if(item.type.startsWith("image/")){
+
+            event.preventDefault();
+
+            const file =
+                item.getAsFile();
+
+            if(file){
+
+                await addImage(file);
+            }
+
+            return;
+        }
+    }
+}
+
+
+async function drop(event){
+
+    event.preventDefault();
+
+    for(const file of event.dataTransfer.files){
+
+        if(file.type.startsWith("image/")){
+
+            await addImage(file);
+        }
+    }
+}
+
+
+/* ------------------------------------------------------------
+   WORD COUNT
+   ------------------------------------------------------------ */
+
+function countWords(){
+
+    const text =
+        document.getElementById("editor")
+        .innerText
+        .trim();
+
+    const count =
+        text ? text.split(/\s+/).length : 0;
+
+    document.getElementById("status").textContent =
+        count===1
+            ? "1 word"
+            : count+" words";
+}
+
+
+/* ------------------------------------------------------------
+   TXT EXPORT
+   ------------------------------------------------------------ */
+
+function exportCurrentTXT(){
+
+    if(!current)return;
+
+    const note =
+        notes.find(n=>n.id===current);
+
+    if(!note)return;
+
+    downloadText(
+        note.title || "note",
+        plain(note.content||"")
+    );
+}
+
+
+function exportTXT(){
+
+    if(!notes.length){
+
+        alert("There are no notes to export.");
+
+        return;
+    }
+
+    /*
+       All notes are put into one readable text file.
+       This is intentionally plain text so it stays tiny.
+    */
+
+    let output="";
+
+    const sorted =
+        [...notes].sort((a,b)=>a.created-b.created);
+
+    for(const note of sorted){
+
+        output+="========================================\n";
+
+        output+=(note.title||"Untitled note")+"\n";
+
+        output+="========================================\n\n";
+
+        output+=plain(note.content||"");
+
+        output+="\n\n\n";
+    }
+
+    downloadText(
+        "Paperclip Notes - All Notes",
+        output
+    );
+}
+
+
+function downloadText(filename,text){
+
+    const blob =
+        new Blob(
+            [text],
+            {type:"text/plain;charset=utf-8"}
+        );
+
+    const url =
+        URL.createObjectURL(blob);
+
+    const a =
+        document.createElement("a");
+
+    a.href=url;
+
+    a.download =
+        cleanFilename(filename)+".txt";
+
+    document.body.appendChild(a);
+
+    a.click();
+
+    a.remove();
+
+    URL.revokeObjectURL(url);
+}
+
+
+function cleanFilename(name){
+
+    return name
+        .replace(/[\\/:*?"<>|]/g,"")
+        .trim()
+        .slice(0,100)
+        || "note";
+}
+
+
+/* ------------------------------------------------------------
+   COMPRESSED BACKUP
+   ------------------------------------------------------------ */
+
+/*
+   The backup contains:
+   - every note
+   - note titles
+   - formatting
+   - every image
+
+   It is then compressed with GZIP.
+
+   Modern Chrome, Edge, Safari and Firefox support
+   CompressionStream.
+*/
+
+async function backup(){
+
+    await saveCurrent();
+
+    const backupData={
+        app:"Paperclip Notes",
+        version:3,
+        created:new Date().toISOString(),
+        notes:notes,
+        images:[]
+    };
+
+    /*
+       Convert images to Base64 ONLY for the backup.
+
+       They are NOT stored this way in the normal database.
+    */
+
+    for(const image of images.values()){
+
+        const base64 =
+            await blobToBase64(image.blob);
+
+        backupData.images.push({
+
+            id:image.id,
+
+            type:image.type,
+
+            data:base64
+        });
+    }
+
+    const json =
+        JSON.stringify(backupData);
+
+    const compressed =
+        await gzip(json);
+
+    const blob =
+        new Blob(
+            [compressed],
+            {type:"application/octet-stream"}
+        );
+
+    const url =
+        URL.createObjectURL(blob);
+
+    const a =
+        document.createElement("a");
+
+    a.href=url;
+
+    const d =
+        new Date()
+        .toISOString()
+        .slice(0,10);
+
+    a.download=
+        "Paperclip-Notes-"+d+".notebackup";
+
+    document.body.appendChild(a);
+
+    a.click();
+
+    a.remove();
+
+    URL.revokeObjectURL(url);
+}
+
+
+/* ------------------------------------------------------------
+   GZIP
+   ------------------------------------------------------------ */
+
+async function gzip(text){
+
+    if(!("CompressionStream" in window)){
+
+        /*
+           Fallback for old browsers.
+           The backup will still work, just larger.
+        */
+
+        return new TextEncoder().encode(text);
+    }
+
+    const stream =
+        new Blob([text])
+        .stream()
+        .pipeThrough(
+            new CompressionStream("gzip")
+        );
+
+    return new Response(stream)
+        .arrayBuffer();
+}
+
+
+async function gunzip(buffer){
+
+    if(!("DecompressionStream" in window)){
+
+        return new TextDecoder()
+            .decode(buffer);
+    }
+
+    const stream =
+        new Blob([buffer])
+        .stream()
+        .pipeThrough(
+            new DecompressionStream("gzip")
+        );
+
+    return await new Response(stream)
+        .text();
+}
+
+
+/* ------------------------------------------------------------
+   BASE64
+   ------------------------------------------------------------ */
+
+function blobToBase64(blob){
+
+    return new Promise(resolve=>{
+
+        const reader =
+            new FileReader();
+
+        reader.onloadend=()=>{
+
+            resolve(
+                reader.result.split(",")[1]
+            );
+        };
+
+        reader.readAsDataURL(blob);
+    });
+}
+
+
+function base64ToBlob(base64,type){
+
+    const binary =
+        atob(base64);
+
+    const bytes =
+        new Uint8Array(binary.length);
+
+    for(let i=0;i<binary.length;i++){
+
+        bytes[i]=binary.charCodeAt(i);
+    }
+
+    return new Blob(
+        [bytes],
+        {type:type}
+    );
+}
+
+
+/* ------------------------------------------------------------
+   RESTORE BACKUP
+   ------------------------------------------------------------ */
+
+async function restore(event){
+
+    const file =
+        event.target.files[0];
+
+    if(!file)return;
+
+    try{
+
+        const buffer =
+            await file.arrayBuffer();
+
+        const json =
+            await gunzip(buffer);
+
+        const data =
+            JSON.parse(json);
+
+        if(
+            !data ||
+            !Array.isArray(data.notes)
+        ){
+
+            throw new Error("Invalid backup");
+        }
+
+        const replace =
+            confirm(
+                "Restore this backup?\n\n"+
+                "OK = Replace the notes currently on this device.\n"+
+                "Cancel = Add the backup's notes to your existing notes."
+            );
+
+        if(replace){
+
+            /*
+               Remove existing notes.
+            */
+
+            for(const note of notes){
+
+                await remove("notes",note.id);
+            }
+
+            /*
+               Remove existing images.
+            */
+
+            for(const image of images.values()){
+
+                await remove("images",image.id);
+            }
+
+            notes=[];
+            images.clear();
+        }
+
+        /*
+           Restore notes.
+        */
+
+        for(const imported of data.notes){
+
+            let id=imported.id;
+
+            if(
+                notes.some(note=>note.id===id)
+            ){
+
+                id=
+                    Date.now().toString(36)+
+                    Math.random().toString(36).slice(2);
+            }
+
+            const note={
+
+                id:id,
+
+                title:
+                    imported.title ||
+                    "Untitled note",
+
+                content:
+                    imported.content ||
+                    "",
+
+                created:
+                    imported.created ||
+                    Date.now(),
+
+                updated:
+                    imported.updated ||
+                    Date.now()
+            };
+
+            notes.push(note);
+
+            await put("notes",note);
+        }
+
+        /*
+           Restore images.
+        */
+
+        if(Array.isArray(data.images)){
+
+            for(const imported of data.images){
+
+                let id=imported.id;
+
+                if(images.has(id)){
+
+                    id=
+                        Date.now().toString(36)+
+                        Math.random().toString(36).slice(2);
+                }
+
+                const blob =
+                    base64ToBlob(
+                        imported.data,
+                        imported.type
+                    );
+
+                const image={
+
+                    id:id,
+
+                    type:imported.type,
+
+                    blob:blob
+                };
+
+                images.set(id,image);
+
+                await put("images",image);
+            }
+        }
+
+        /*
+           IMPORTANT:
+           The HTML content references image IDs.
+
+           If IDs changed because of a merge, update those
+           references in the imported notes.
+        */
+
+        notes.sort((a,b)=>b.updated-a.updated);
+
+        renderNotes();
+
+        if(notes.length){
+
+            openNote(notes[0].id);
+        }
+
+        alert(
+            "All notes from the backup were restored."
+        );
+
+    }catch(error){
+
+        console.error(error);
+
+        alert(
+            "That file is not a valid Paperclip Notes backup."
+        );
+    }
+
+    event.target.value="";
+}
+
+
+/* ------------------------------------------------------------
+   DELETE
+   ------------------------------------------------------------ */
+
+function askDelete(){
+
+    if(!current)return;
+
+    document.getElementById("deleteModal")
+        .style.display="flex";
+}
+
+
+function closeDelete(){
+
+    document.getElementById("deleteModal")
+        .style.display="none";
+}
+
+
+async function deleteNote(){
+
+    if(!current)return;
+
+    const note =
+        notes.find(n=>n.id===current);
+
+    if(!note)return;
+
+    /*
+       Find images used by this note.
+    */
+
+    const holder =
+        document.createElement("div");
+
+    holder.innerHTML=
+        note.content||"";
+
+    const used =
+        [...holder.querySelectorAll("img")]
+        .map(img=>img.dataset.imageId)
+        .filter(Boolean);
+
+    await remove("notes",current);
+
+    /*
+       Delete image data that belongs only to this note.
+    */
+
+    for(const imageId of used){
+
+        let usedElsewhere=false;
+
+        for(const other of notes){
+
+            if(other.id===current)continue;
+
+            if(
+                other.content &&
+                other.content.includes(
+                    imageId
+                )
+            ){
+
+                usedElsewhere=true;
+                break;
+            }
+        }
+
+        if(!usedElsewhere){
+
+            await remove("images",imageId);
+
+            images.delete(imageId);
+        }
+    }
+
+    notes =
+        notes.filter(n=>n.id!==current);
+
+    current=null;
+
+    closeDelete();
+
+    renderNotes();
+
+    if(notes.length){
+
+        openNote(notes[0].id);
+
+    }else{
+
+        empty();
+    }
+}
+
+
+/* ------------------------------------------------------------
+   EMPTY
+   ------------------------------------------------------------ */
+
+function empty(){
+
+    current=null;
+
+    document.getElementById("topbar")
+        .style.display="none";
+
+    document.getElementById("toolbar")
+        .style.display="none";
+
+    document.getElementById("editorWrap")
+        .style.display="none";
+
+    document.getElementById("emptyState")
+        .style.display="flex";
+
+    document.getElementById("status")
+        .textContent="0 words";
+}
+
+
+/* ------------------------------------------------------------
+   UTILITIES
+   ------------------------------------------------------------ */
+
+function plain(html){
+
+    const div =
+        document.createElement("div");
+
+    div.innerHTML=html;
+
+    /*
+       Don't include image data in TXT previews.
+    */
+
+    div.querySelectorAll("img")
+        .forEach(img=>img.remove());
+
+    return div.innerText||"";
+}
+
+
+function escape(text){
+
+    return text
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+}
+
+
+/* ------------------------------------------------------------
+   KEYBOARD SHORTCUTS
+   ------------------------------------------------------------ */
+
+document.addEventListener("keydown",e=>{
+
+    if(
+        (e.ctrlKey||e.metaKey) &&
+        e.key.toLowerCase()==="s"
+    ){
+
+        e.preventDefault();
+
+        saveCurrent();
+    }
+
+    if(
+        (e.ctrlKey||e.metaKey) &&
+        e.key.toLowerCase()==="n"
+    ){
+
+        e.preventDefault();
+
+        newNote();
+    }
+});
+
+
+/* ------------------------------------------------------------
+   START
+   ------------------------------------------------------------ */
+
+start();
+
+</script>
+
+</body>
+</html>
+```
